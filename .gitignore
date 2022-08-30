@@ -8,3 +8,5 @@ test/my_db_test.db
 test/output.xml
 test/report.html
 test/logs/
+/*.iml
+

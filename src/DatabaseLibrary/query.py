@@ -248,7 +248,7 @@ class Query(object):
         Using optional `sansTran` to run command without an explicit transaction commit or rollback:
         | Execute Sql Script | ${EXECDIR}${/}resources${/}DDL-setup.sql | True |
         """
-        sqlScriptFile = open(sqlScriptFileName ,encoding='UTF-8')
+        sqlScriptFile = open(sqlScriptFileName, encoding='UTF-8')
 
         cur = None
         try:
@@ -258,7 +258,7 @@ class Query(object):
             for line in sqlScriptFile:
                 PY3K = sys.version_info >= (3, 0)
                 if not PY3K:
-                    #spName = spName.encode('ascii', 'ignore')
+                    # spName = spName.encode('ascii', 'ignore')
                     line = line.strip().decode("utf-8")
                 if line.startswith('#'):
                     continue
@@ -354,11 +354,15 @@ class Query(object):
                 spName = spName.encode('ascii', 'ignore')
             logger.info('Executing : Call Stored Procedure  |  %s  |  %s ' % (spName, spParams))
             cur.callproc(spName, spParams)
-            cur.nextset()
-            retVal=list()
-            for row in cur:
-                #logger.info ( ' %s ' % (row))
-                retVal.append(row)
+            retVal = list()
+            # On Oracle, the cursor does not have the attribute nextset
+            # https://peps.python.org/pep-0249/#nextset
+            hasNextSet = hasattr(cur, 'nextset')
+            if hasNextSet:
+                cur.nextset()
+                for row in cur:
+                    # logger.info ( ' %s ' % (row))
+                    retVal.append(row)
             if not sansTran:
                 self._dbconnection.commit()
             return retVal
